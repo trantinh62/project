@@ -26,7 +26,7 @@ class RegisterController extends Controller
         if($user->save()){
             if (!empty($image))
             {
-                $image->move('update/user/avatar', $image->getClientOriginalName());
+                $image->move('storage/user/avatar', $image->getClientOriginalName());
             }
         }
 
