@@ -12,25 +12,22 @@ class RegisterController extends Controller
 {
     public function register(RegisterRequest $request)
     {
-        // $error_email = User::where('email', $request->email)->count();
-        // if($error_email > 0)
-        // {
-        //     return response()->json([
-        //         'msg' => 'error email',
-        //         'status' => false
-        //     ]);
-        // }
+        $user = new User;
+        $user->first_name = $request->first_name;
+        $user->last_name = $request->last_name;
+        $user->email = $request->email;
+        $user->password = hash::make($request->password);
+        $user->role_id = $request->role_id;
         $image = $request->image;
         if (!empty($image))
         {
-            $user = User::create([
-                'first_name' => $request->first_name,
-                'last_name' => $request->last_name,
-                'email' => $request->email,
-                'image' => $image->getClientOriginalName(),
-                'password' => hash::make($request->password),
-                'role_id' => $request->role_id
-               ]);
+            $user->image = $image->getClientOriginalName();
+        }
+        if($user->save()){
+            if (!empty($image))
+            {
+                $image->move('update/user/avatar', $image->getClientOriginalName());
+            }
         }
 
        $token = $user->createToken('auth_token')->plainTextToken;
