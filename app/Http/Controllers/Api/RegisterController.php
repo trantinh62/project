@@ -15,21 +15,16 @@ class RegisterController extends Controller
 {
     public function register(RegisterRequest $request)
     {
-        $user = new User;
-        $user->first_name = $request->first_name;
-        $user->last_name = $request->last_name;
-        $user->email = $request->email;
-        $user->password = hash::make($request->password);
-        $user->role_id = $request->role_id;
-        $image = $request->image;
-        $nameImage = rand().'.'.$image->getClientOriginalName();
-        if (!empty($image))
-        {
-            $user->image = $nameImage;
+        $data = $request->all();
+        $img = $request->image;
+        $data['password'] = bcrypt($data['password']);
+        if (!empty($data['image'])) {
+            $data['image'] = rand() . '.' . $data['image']->getClientOriginalName();
         }
-        if($user->save())
-        {
-            $request->image->storeAs('images',$nameImage, 'public');
+        $user = User::create($data);
+        $nameImage = $data['image'];
+        if ($user) {
+            $img->storeAs('images', $nameImage, 'public');
         }
         $token = $user->createToken('auth_token')->plainTextToken;
         
@@ -37,7 +32,7 @@ class RegisterController extends Controller
             'data' => $user,
             'code_token' => $token,
             'status' => true,
-            'image' => asset('storage/images/'.$nameImage)
+            'image' => asset('storage/images/' . $nameImage)
         ]);
     }
 }
