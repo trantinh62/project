@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
 use App\Models\User;
+use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\hash;
+use Illuminate\Support\Facades\Storage;
 
 class RegisterController extends Controller
 {
@@ -19,25 +22,22 @@ class RegisterController extends Controller
         $user->password = hash::make($request->password);
         $user->role_id = $request->role_id;
         $image = $request->image;
+        $nameImage = rand().'.'.$image->getClientOriginalName();
         if (!empty($image))
         {
-            $user->image = $image->getClientOriginalName();
+            $user->image = $nameImage;
         }
-        if($user->save()){
-            if (!empty($image))
-            {
-                $image->move('storage/user/avatar', $image->getClientOriginalName());
-            }
+        if($user->save())
+        {
+            $request->image->storeAs('images',$nameImage, 'public');
         }
-
-       $token = $user->createToken('auth_token')->plainTextToken;
-
-       return response()->json([
-        'data' => $user,
-        'code_token' => $token,
-        'status' => true,
-       ]);
-
-
+        $token = $user->createToken('auth_token')->plainTextToken;
+        
+        return response()->json([
+            'data' => $user,
+            'code_token' => $token,
+            'status' => true,
+            'image' => asset('storage/images/'.$nameImage)
+        ]);
     }
 }
