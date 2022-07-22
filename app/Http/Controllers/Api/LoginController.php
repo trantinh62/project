@@ -21,7 +21,7 @@ class LoginController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'mesage' => 'Hi' .$user->name.', welcome to home',
+            'mesage' => 'Hi ' . $user->first_name . ', welcome to home',
             'access_token' => $token,
             'token_type'=>'bearer',
         ]);

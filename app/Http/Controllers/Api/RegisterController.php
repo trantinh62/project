@@ -22,17 +22,29 @@ class RegisterController extends Controller
             $data['image'] = rand() . '.' . $data['image']->getClientOriginalName();
         }
         $user = User::create($data);
-        $nameImage = $data['image'];
-        if ($user) {
-            $img->storeAs('images', $nameImage, 'public');
-        }
         $token = $user->createToken('auth_token')->plainTextToken;
-        
-        return response()->json([
-            'data' => $user,
-            'code_token' => $token,
-            'status' => true,
-            'image' => asset('storage/images/' . $nameImage)
-        ]);
+        if ($user) {
+            if ($request->hasFile('image')) {
+                $nameImage = $data['image'];
+                $img->storeAs('images', $nameImage, 'public');
+
+                return response()->json([
+                    'data' => $user,
+                    'code_token' => $token,
+                    'status' => true,
+                    'links' => [
+                        'site' => asset('storage/images/' . $nameImage),
+                        'folder' => storage_path('images/' . $nameImage),
+                    ],
+                ]);
+            } else {
+
+                return response()->json([
+                    'data' => $user,
+                    'code_token' => $token,
+                    'status' => true,
+                ]);
+            }
+        }
     }
 }
