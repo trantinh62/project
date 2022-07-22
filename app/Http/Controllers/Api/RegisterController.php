@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Storage;
 
 class RegisterController extends Controller
 {
-    public function register(RegisterRequest $request)
+    public function register(Request $request)
     {
         $data = $request->all();
         $img = $request->image;
@@ -21,30 +21,37 @@ class RegisterController extends Controller
         if (!empty($data['image'])) {
             $data['image'] = rand() . '.' . $data['image']->getClientOriginalName();
         }
-        $user = User::create($data);
-        $token = $user->createToken('auth_token')->plainTextToken;
-        if ($user) {
-            if ($request->hasFile('image')) {
-                $nameImage = $data['image'];
-                $img->storeAs('images', $nameImage, 'public');
-
-                return response()->json([
-                    'data' => $user,
-                    'code_token' => $token,
-                    'status' => true,
-                    'links' => [
+        try {
+            $user = User::create($data);
+            $token = $user->createToken('auth_token')->plainTextToken;
+            if ($user) {
+                if ($request->hasFile('image')) {
+                    $nameImage = $data['image'];
+                    $img->storeAs('images', $nameImage, 'public');
+                    $user['link'] = [
                         'site' => asset('storage/images/' . $nameImage),
                         'folder' => storage_path('images/' . $nameImage),
-                    ],
-                ]);
-            } else {
-
-                return response()->json([
-                    'data' => $user,
-                    'code_token' => $token,
-                    'status' => true,
-                ]);
+                    ];
+                    return response()->json([
+                        'data' => $user,
+                        'code_token' => $token,
+                        'status' => true
+                    ]);
+                } else {
+    
+                    return response()->json([
+                        'data' => $user,
+                        'code_token' => $token,
+                        'status' => true,
+                    ]);
+                }
             }
+        } catch (Exception $e) {
+            return response()->json([
+                'data' => null,
+                'code'=> 500,
+                'message' => $e->getMessage()
+            ]);
         }
     }
 }

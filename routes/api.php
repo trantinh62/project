@@ -20,9 +20,8 @@ use App\Http\Controllers\Api\RegisterController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-
+Route::post('register', [RegisterController::class, 'register']);
 Route::post('login', LoginController::class);
 Route::middleware('auth:sanctum')->group(function(){
-    Route::post('register', [RegisterController::class, 'register']);
     Route::post('logout', LogoutController::class);
 });
