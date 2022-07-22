@@ -16,10 +16,11 @@ class ProfileController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function register(RegisterRequest $request)
+    public function register(Request $request)
     {
         $data = $request->all();
         $img = $request->image;
+        dd($img);
         $data['password'] = bcrypt($data['password']);
         if (!empty($data['image'])) {
             $data['image'] = rand() . '.' . $data['image']->getClientOriginalName();
@@ -137,7 +138,6 @@ class ProfileController extends Controller
     {
         $profile = User::findOrFail($id);
         $data = $request->all();
-        // dd($data);
         $img = $request->image;
         $path = 'public/images/';
         $imageCu =  $profile['image'];
@@ -146,12 +146,9 @@ class ProfileController extends Controller
             $data['image'] = rand() . '.' . $data['image']->getClientOriginalName();
         }
         try {
-            
             $profile->update($data);
-           
             if ($request->hasFile('image')) {
                 Storage::delete($path . $imageCu);
-
                 $nameImage = $data['image'];
                 $img->storeAs('images', $nameImage, 'public');
                 $profile['link'] = [
@@ -165,6 +162,9 @@ class ProfileController extends Controller
                 'code'=> 500,
                 'message' => $e->getMessage()
             ]);
+        }
+        if ($request->imageAvatar == null) {
+            Storage::delete($path . $imageCu);
         }
         return response()->json([
             'data' => $profile,
