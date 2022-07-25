@@ -20,7 +20,6 @@ class ProfileController extends Controller
     {
         $data = $request->all();
         $img = $request->image;
-        dd($img);
         $data['password'] = bcrypt($data['password']);
         if (!empty($data['image'])) {
             $data['image'] = rand() . '.' . $data['image']->getClientOriginalName();
@@ -140,7 +139,7 @@ class ProfileController extends Controller
         $data = $request->all();
         $img = $request->image;
         $path = 'public/images/';
-        $imageCu =  $profile['image'];
+        $imageAvatar =  $profile['image'];
         $data['password'] = bcrypt($data['password']);
         if (!empty($data['image'])) {
             $data['image'] = rand() . '.' . $data['image']->getClientOriginalName();
@@ -148,7 +147,7 @@ class ProfileController extends Controller
         try {
             $profile->update($data);
             if ($request->hasFile('image')) {
-                Storage::delete($path . $imageCu);
+                Storage::delete($path . $imageAvatar);
                 $nameImage = $data['image'];
                 $img->storeAs('images', $nameImage, 'public');
                 $profile['link'] = [
@@ -164,7 +163,9 @@ class ProfileController extends Controller
             ]);
         }
         if ($request->imageAvatar == null) {
-            Storage::delete($path . $imageCu);
+            Storage::delete($path . $imageAvatar);
+            $profile['image'] = null;
+            $profile->update($data);
         }
         return response()->json([
             'data' => $profile,
