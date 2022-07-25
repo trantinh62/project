@@ -18,13 +18,23 @@ class ProfileController extends Controller
      */
     public function index()
     {
-        $profile = User::find(Auth::id())->toArray();
-        
-        return response()->json([
-            'message' => 'show data User',
-            'data' => $profile,
-            'status' => true,
-        ]);
+        $this->authorize('listAdmin', User::class);
+        $profile = User::all();
+        try {
+
+            return response()->json([
+                'message' => 'show data User',
+                'data' => $profile,
+                'status' => true,
+            ]);
+        } catch (Exception $e) {
+
+            return response()->json([
+                'message' => 'error',
+                'data' => null,
+                'status' => false,
+            ]);
+        }
     }
 
     /**
@@ -46,7 +56,23 @@ class ProfileController extends Controller
      */
     public function show($id)
     {
-        //
+        $this->authorize('listMember', User::class);
+        $profile = User::findOrFail($id);
+        try {
+
+            return response()->json([
+                'message' => 'show data User',
+                'data' => $profile,
+                'status' => true,
+            ]);
+        } catch (Exception $e) {
+
+            return response()->json([
+                'message' => 'error',
+                'data' => null,
+                'status' => false,
+            ]);
+        }
     }
 
     /**
