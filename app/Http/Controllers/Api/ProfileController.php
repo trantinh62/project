@@ -107,6 +107,13 @@ class ProfileController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $this->authorize('register', User::class);
+        $profile = User::find($id);
+        $profile->delete();
+        return response()->json([
+            'data' => null,
+            'code'=> 200,
+            'message' => 'Delete User oke'
+        ]);
     }
 }
