@@ -6,7 +6,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\RegisterRequest;
 use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
@@ -107,13 +106,23 @@ class ProfileController extends Controller
      */
     public function destroy($id)
     {
-        $this->authorize('register', User::class);
+        $this->authorize('delete', User::class);
         $profile = User::find($id);
-        $profile->delete();
-        return response()->json([
-            'data' => null,
-            'code'=> 200,
-            'message' => 'Delete User oke'
-        ]);
+        try {
+            $profile->delete();
+
+            return response()->json([
+                'data' => null,
+                'code'=> 200,
+                'message' => 'Delete User oke'
+            ]);
+        } catch (Exception $e) {
+
+            return response()->json([
+                'data' => null,
+                'code'=> 500,
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 }

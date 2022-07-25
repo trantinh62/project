@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\RegisterRequest;
 
 class AuthController extends Controller
 {
@@ -14,7 +15,7 @@ class AuthController extends Controller
     *
     * @return \Illuminate\Http\Response
     */
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
         auth()->shouldUse('sanctum');
         $this->authorize('register', User::class);
@@ -61,7 +62,7 @@ class AuthController extends Controller
         if (!Auth::attempt($request->only('email','password')))
         {
             return response()->json([
-                'message' => 'Unauthorized'
+                'message' => 'Unauthorized1111'
             ], 401);
         }
         $user = User::where('email', $request['email'])->firstOrFail();
