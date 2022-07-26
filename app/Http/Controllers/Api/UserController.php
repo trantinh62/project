@@ -12,6 +12,57 @@ class UserController extends Controller
 {
     public const IMG_AVATAR = 1;
 
+     /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    protected function saveDataUser(Request $request,  $user = null )
+    {
+        $this->authorize('create', User::class);
+        $data = $request->all();
+        $data['password'] = bcrypt($data['password']);
+        $uploaded = false;
+        try {
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $newName = rand() . '.' . $image->getClientOriginalName();
+                $data['image'] = $newName;
+                $uploaded = Storage::putFileAs('images', $image, $newName, 'public');
+            }
+            if(!$user) {
+                $user = User::create($data);
+            } else {
+                $user->update($data);
+            }
+            $token = $user->createToken('auth_token')->plainTextToken;
+            if ($uploaded) {
+                $user['image_link'] = Storage::url('images/' . $newName);
+            }
+            if (empty($request->image)) {
+                $profile = User::findOrFail($user->id);
+                $path = 'public/images/';
+                $imageAvatar = $profile['image'];
+                if ($request->image_avatar != UserController::IMG_AVATAR) {
+                    Storage::delete($path . $imageAvatar);
+                    $profile['image'] = null;
+                    $profile->update($data);
+                }
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                'data' => null,
+                'code'=> 500,
+                'message' => $e->getMessage()
+            ]);
+        }
+        return response()->json([
+            'data' => $user,
+            'code_token' => $token,
+            'status' => true,
+        ]);
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -37,35 +88,7 @@ class UserController extends Controller
     public function store(RegisterRequest $request)
     {
         $this->authorize('create', User::class);
-        $data = $request->all();
-        $img = $request->image;
-        $data['password'] = bcrypt($data['password']);
-        if ($request->hasFile('image')) {
-            $data['image'] = rand() . '.' . $data['image']->getClientOriginalName();
-        }
-        try {
-            $user = User::create($data);
-            $token = $user->createToken('auth_token')->plainTextToken;  
-            if ($request->hasFile('image')) {
-                $nameImage = $data['image'];
-                $img->storeAs('images', $nameImage, 'public');
-                $user['link'] = [
-                    'site' => asset('storage/images/' . $nameImage),
-                    'folder' => storage_path('images/' . $nameImage),
-                ];
-            } 
-        } catch (Exception $e) {
-            return response()->json([
-                'data' => null,
-                'code'=> 500,
-                'message' => $e->getMessage()
-            ]);
-        }
-        return response()->json([
-            'data' => $user,
-            'code_token' => $token,
-            'status' => true,
-        ]);
+        return $this->saveDataUser($request);
     }
 
     /**
@@ -102,47 +125,10 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, User $user)
     {
-        $this->authorize('update', User::class);
-        $profile = User::findOrFail($id);
-        $data = $request->all();
-        $img = $request->image;
-        $path = 'public/images/';
-        $imageAvatar = $profile['image'];
-        $data['password'] = bcrypt($data['password']);
-        if (!empty($data['image'])) {
-            $data['image'] = rand() . '.' . $data['image']->getClientOriginalName();
-        }
-        try {
-            $profile->update($data);
-            if ($request->hasFile('image')) {
-                Storage::delete($path . $imageAvatar);
-                $nameImage = $request->image->getClientOriginalName();
-                $img->storeAs('images', $nameImage, 'public');
-                $profile['link'] = [
-                    'site' => asset('storage/images/' . $nameImage),
-                    'folder' => storage_path('images/' . $nameImage),
-                ];
-            } 
-        } catch (Exception $e) {
-            return response()->json([
-                'data' => null,
-                'code'=> 500,
-                'message' => $e->getMessage()
-            ]);
-        }
-        if (empty($request->image)) {
-            if ($request->image_avatar != self::IMG_AVATAR) {
-                Storage::delete($path . $imageAvatar);
-                $profile['image'] = null;
-                $profile->update($data);
-            }
-        }
-        return response()->json([
-            'data' => $profile,
-            'status' => true,
-        ]);
+        $this->authorize('update', $user);
+        return $this->saveDataUser($request, $user);
     }
 
     /**

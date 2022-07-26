@@ -43,7 +43,7 @@ class ProfileController extends Controller
         $path = 'public/images/';
         $imageAvatar = $profile['image'];
         $data['password'] = bcrypt($data['password']);
-        if (!empty($data['image'])) {
+        if ($request->hasFile('image')) {
             $data['image'] = rand() . '.' . $data['image']->getClientOriginalName();
         }
         try {
@@ -52,10 +52,7 @@ class ProfileController extends Controller
                 Storage::delete($path . $imageAvatar);
                 $nameImage = $request->image->getClientOriginalName();
                 $img->storeAs('images', $nameImage, 'public');
-                $profile['link'] = [
-                    'site' => asset('storage/images/' . $nameImage),
-                    'folder' => storage_path('images/' . $nameImage),
-                ];
+                $profile['link'] = asset('storage/images/' . $nameImage);
             } 
         } catch (Exception $e) {
             return response()->json([
