@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\ProfileController;
 
 /*
@@ -28,7 +29,9 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::post('logout', 'logout');
     });
     Route::apiResources([
-        'profile' => ProfileController::class,
+        'user' => UserController::class,
     ]);
-   
+    Route::resource('profile', ProfileController::class)->only([
+        'update', 'index'
+    ]);
 });

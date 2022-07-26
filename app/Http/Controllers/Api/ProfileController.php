@@ -10,43 +10,6 @@ use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
-    public const IMG_AVATAR = 1;
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        $this->authorize('listAdmin', User::class);
-        $profile = User::all();
-        try {
-
-            return response()->json([
-                'message' => 'show data User',
-                'data' => $profile,
-                'status' => true,
-            ]);
-        } catch (Exception $e) {
-
-            return response()->json([
-                'message' => 'error',
-                'data' => null,
-                'status' => false,
-            ]);
-        }
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
 
     /**
      * Display the specified resource.
@@ -54,25 +17,15 @@ class ProfileController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function index()
     {
-        $this->authorize('listMember', User::class);
-        $profile = User::findOrFail($id);
-        try {
+        $user = User::find(Auth::id())->toArray();
 
-            return response()->json([
-                'message' => 'show data User',
-                'data' => $profile,
-                'status' => true,
-            ]);
-        } catch (Exception $e) {
-
-            return response()->json([
-                'message' => 'error',
-                'data' => null,
-                'status' => false,
-            ]);
-        }
+        return response()->json([
+            'message' => 'show data User',
+            'data' => $user,
+            'status' => true,
+        ]);
     }
 
     /**
@@ -112,7 +65,7 @@ class ProfileController extends Controller
             ]);
         }
         if (empty($request->image)) {
-            if ($request->image_avatar != self::IMG_AVATAR) {
+            if ($request->image_avatar != UserController::IMG_AVATAR) {
                 Storage::delete($path . $imageAvatar);
                 $profile['image'] = null;
                 $profile->update($data);
@@ -122,33 +75,5 @@ class ProfileController extends Controller
             'data' => $profile,
             'status' => true,
         ]);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $this->authorize('delete', User::class);
-        $profile = User::find($id);
-        try {
-            $profile->delete();
-
-            return response()->json([
-                'data' => null,
-                'code'=> 200,
-                'message' => 'Delete User oke'
-            ]);
-        } catch (Exception $e) {
-
-            return response()->json([
-                'data' => null,
-                'code'=> 500,
-                'message' => $e->getMessage()
-            ]);
-        }
     }
 }
