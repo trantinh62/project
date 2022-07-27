@@ -32,6 +32,6 @@ Route::middleware('auth:sanctum')->group(function(){
         'user' => UserController::class,
     ]);
     Route::resource('profile', ProfileController::class)->only([
-        'update', 'index'
+        'update', 'index', 'store'
     ]);
 });

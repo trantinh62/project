@@ -17,7 +17,7 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    protected function saveDataUser(Request $request,  $user = null )
+    public function saveDataUser(Request $request,  $user = null )
     {
         $this->authorize('create', User::class);
         $data = $request->all();
@@ -71,7 +71,7 @@ class UserController extends Controller
     public function index()
     {
         $this->authorize('viewAny', User::class);
-        $users = User::all();
+        $users = User::paginate(6);
 
         return response()->json([
             'data' => $users,

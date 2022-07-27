@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Controllers\Api\UserController;
 
 class ProfileController extends Controller
 {
@@ -20,7 +21,6 @@ class ProfileController extends Controller
     public function index()
     {
         $user = User::find(Auth::id())->toArray();
-
         return response()->json([
             'message' => 'show data User',
             'data' => $user,
@@ -61,16 +61,36 @@ class ProfileController extends Controller
                 'message' => $e->getMessage()
             ]);
         }
-        if (empty($request->image)) {
-            if ($request->image_avatar != UserController::IMG_AVATAR) {
-                Storage::delete($path . $imageAvatar);
-                $profile['image'] = null;
-                $profile->update($data);
-            }
-        }
         return response()->json([
             'data' => $profile,
             'status' => true,
         ]);
+    }
+
+      /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        $users = User::query();
+        if (!empty($request->search)) {
+            $users->Where('first_name', 'like', '%' . $request->search . '%');
+            $users = $users->get()->toArray();
+            if ($users == []) {
+                return response()->json([
+                    'Message' => 'Không có dữ liệu',
+                    'status' => true,
+                ]);
+            }
+            return response()->json([
+                'data' => $users,
+                'status' => true,
+            ]);
+        }
+
     }
 }
